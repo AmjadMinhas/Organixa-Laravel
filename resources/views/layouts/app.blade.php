@@ -65,11 +65,6 @@
                             <a href="{{ route('admin.login') }}" class="text-green-600 hover:text-green-700 px-3 py-2 rounded-md text-sm font-medium">Admin Panel</a>
                         </div>
 
-                        <!-- Database Viewer Link -->
-                        <div class="ml-3 relative">
-                            <a href="{{ route('db.viewer') }}" class="text-blue-600 hover:text-blue-700 px-3 py-2 rounded-md text-sm font-medium">DB Viewer</a>
-                        </div>
-
                         <!-- Settings Dropdown -->
                         <div class="ml-3 relative">
                             @auth
@@ -100,11 +95,71 @@
 
                     <!-- Hamburger -->
                     <div class="-mr-2 flex items-center sm:hidden">
-                        <button class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out" aria-label="Main menu" aria-expanded="false">
+                        <button id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out" aria-label="Main menu" aria-expanded="false">
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                             </svg>
                         </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mobile menu -->
+            <div id="mobile-menu" class="hidden sm:hidden">
+                <div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
+                    <a href="{{ route('home') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                        Home
+                    </a>
+                    <a href="{{ route('products') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                        Products
+                    </a>
+                    <a href="{{ route('about') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                        About
+                    </a>
+                    <a href="{{ route('contact') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                        Contact
+                    </a>
+                    
+                    <!-- Mobile Cart -->
+                    <div class="px-3 py-2">
+                        <a href="{{ route('cart') }}" class="flex items-center text-base font-medium text-gray-700 hover:text-gray-900">
+                            <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                            </svg>
+                            Cart
+                            @if($cartCount > 0)
+                                <span class="ml-2 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                                    {{ $cartCount }}
+                                </span>
+                            @endif
+                        </a>
+                    </div>
+                    
+                    <!-- Mobile Auth Links -->
+                    <div class="px-3 py-2 border-t border-gray-200">
+                        @auth
+                            <a href="{{ route('profile') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                                Profile
+                            </a>
+                            @if(auth()->user()->isAdmin())
+                                <a href="{{ route('admin') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                                    Admin Panel
+                                </a>
+                            @endif
+                            <form method="POST" action="{{ route('logout') }}" class="block">
+                                @csrf
+                                <button type="submit" class="w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                                    Logout
+                                </button>
+                            </form>
+                        @else
+                            <a href="{{ route('login') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                                Login
+                            </a>
+                            <a href="{{ route('register') }}" class="block px-3 py-2 rounded-md text-base font-medium text-white bg-green-600 hover:bg-green-700 rounded-md">
+                                Register
+                            </a>
+                        @endauth
                     </div>
                 </div>
             </div>

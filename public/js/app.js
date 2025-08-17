@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Mobile menu toggle
-    const mobileMenuButton = document.querySelector('[aria-label="Main menu"]');
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
     if (mobileMenuButton) {
         mobileMenuButton.addEventListener('click', toggleMobileMenu);
     }

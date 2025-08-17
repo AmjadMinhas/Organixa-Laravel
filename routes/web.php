@@ -165,12 +165,4 @@ Route::prefix('api')->group(function () {
     });
 });
 
-// Database viewer (for development)
-Route::get('/db', function () {
-    $users = \App\Models\User::all();
-    $products = \App\Models\Product::all();
-    $orders = \App\Models\Order::all();
-    $cartItems = \App\Models\CartItem::all();
-    
-    return view('db-viewer', compact('users', 'products', 'orders', 'cartItems'));
-})->name('db.viewer');
+
