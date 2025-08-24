@@ -41,15 +41,109 @@ function addToCart(productId, quantity = 1) {
     button.textContent = 'Adding...';
     button.disabled = true;
 
-    setTimeout(() => {
-        // Optional: show "Added!" briefly
-        button.textContent = 'Added!';
-        
-        // Reload the page after a short delay
-        setTimeout(() => {
-            location.reload();
-        }, 500); // 0.5s delay before reload
-    }, 500);
+    // Get the CSRF token from the meta tag
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    // Make AJAX request to add to cart
+    fetch('/cart/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRF-TOKEN': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        },
+        body: new URLSearchParams({
+            '_token': csrfToken,
+            'product_id': productId,
+            'quantity': quantity
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.error) {
+            showAlert(data.error, 'error');
+            button.textContent = originalText;
+            button.disabled = false;
+        } else {
+            // Show success message
+            button.textContent = 'Added!';
+            showAlert('Product added to cart successfully!', 'success');
+            
+            // Update cart count in the UI immediately
+            updateCartCountUI(data.cart_count);
+            
+            // Try to refresh Livewire components if available
+            if (window.Livewire) {
+                window.Livewire.dispatch('cart-updated');
+            }
+            
+            // Reset button after delay
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.disabled = false;
+            }, 2000);
+        }
+    })
+    .catch(error => {
+        console.error('Error adding to cart:', error);
+        showAlert('Error adding product to cart. Please try again.', 'error');
+        button.textContent = originalText;
+        button.disabled = false;
+    });
+}
+
+// Function to update cart count in the UI
+function updateCartCountUI(count) {
+    // Update all cart count elements with the cart-count class
+    const cartCountElements = document.querySelectorAll('.cart-count');
+    
+    cartCountElements.forEach((element, index) => {
+        element.textContent = count;
+        element.style.display = count > 0 ? 'flex' : 'none';
+    });
+    
+    // Also update any span elements that contain only numbers (likely cart counts)
+    const allSpans = document.querySelectorAll('span');
+    allSpans.forEach(element => {
+        const text = element.textContent.trim();
+        if (text && /^\d+$/.test(text) && element.classList.contains('bg-primary')) {
+            // This looks like a cart count badge
+            element.textContent = count;
+            element.style.display = count > 0 ? 'flex' : 'none';
+        }
+    });
+    
+    // Update any elements with cart-related classes
+    const cartElements = document.querySelectorAll('[class*="cart"]');
+    cartElements.forEach(element => {
+        const text = element.textContent.trim();
+        if (text && /^\d+$/.test(text)) {
+            element.textContent = count;
+        }
+    });
+}
+
+// Function to update cart count from the page
+function updateCartCountFromPage() {
+    // Try to refresh Livewire components if available
+    if (window.Livewire) {
+        window.Livewire.dispatch('cart-updated');
+    }
+    
+    // Update cart count elements
+    const cartCountElements = document.querySelectorAll('.cart-count');
+    cartCountElements.forEach(element => {
+        // Try to get the count from the element or increment it
+        const currentCount = parseInt(element.textContent) || 0;
+        element.textContent = currentCount + 1;
+        element.style.display = 'flex';
+    });
 }
 
 
@@ -72,7 +166,6 @@ function toggleMobileMenu() {
 // Search functionality
 function searchProducts(query) {
     // This will be handled by Livewire search
-    console.log('Searching for:', query);
 }
 
 // Quantity controls

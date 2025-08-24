@@ -1,12 +1,24 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Our Products</h1>
-        <p class="mt-2 text-gray-600">Discover our premium organic skincare collection</p>
+<!-- Hero Section -->
+<section class="relative py-16 bg-gradient-subtle">
+    <div class="container mx-auto">
+        <div class="text-center">
+            <h1 class="font-serif text-4xl lg:text-5xl font-bold text-text mb-6">
+                Our Products
+            </h1>
+            <p class="text-xl text-text-light max-w-2xl mx-auto leading-relaxed">
+                Discover our premium organic skincare collection, carefully crafted with natural ingredients for your skin's health and radiance.
+            </p>
+        </div>
     </div>
+</section>
 
-    @livewire('products')
-</div>
+<!-- Products Section -->
+<section class="py-12 bg-white">
+    <div class="container mx-auto">
+        @livewire('products')
+    </div>
+</section>
 @endsection 

@@ -8,9 +8,16 @@ use Livewire\Component;
 
 class CartDropdown extends Component
 {
+    public $open = false;
+    
     protected $listeners = ['cart-updated' => '$refresh'];
 
-    public function render()
+    public function mount()
+    {
+        // Initialize component
+    }
+
+    public function getCartData()
     {
         $cartItems = collect();
         $cartTotal = 0;
@@ -41,6 +48,13 @@ class CartDropdown extends Component
             $cartCount = array_sum($sessionCart);
         }
 
-        return view('livewire.cart-dropdown', compact('cartItems', 'cartTotal', 'cartCount'));
+        return compact('cartItems', 'cartTotal', 'cartCount');
+    }
+
+    public function render()
+    {
+        $cartData = $this->getCartData();
+        
+        return view('livewire.cart-dropdown', $cartData);
     }
 } 

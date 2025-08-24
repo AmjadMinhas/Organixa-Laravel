@@ -50,7 +50,7 @@ class CartController extends Controller
         $product = Product::findOrFail($request->product_id);
         
         if (!$product->isInStock()) {
-            return response()->json(['error' => 'Product is out of stock'], 400);
+            return redirect()->back()->with('error', 'Product is out of stock.');
         }
 
         if (Auth::check()) {
@@ -60,7 +60,7 @@ class CartController extends Controller
             if ($cartItem) {
                 $cartItem->increment('quantity', $request->quantity);
             } else {
-                Auth::user()->cartItems()->create([
+                $cartItem = Auth::user()->cartItems()->create([
                     'product_id' => $request->product_id,
                     'quantity' => $request->quantity,
                 ]);
@@ -79,7 +79,48 @@ class CartController extends Controller
             session(['cart' => $cart]);
         }
 
-        return response()->json(['message' => 'Product added to cart successfully']);
+        $cartCount = $this->getCartCount();
+        $cartTotal = $this->getCartTotal();
+
+        // Return JSON response for AJAX requests
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Product added to cart successfully',
+                'cart_count' => $cartCount,
+                'cart_total' => $cartTotal
+            ]);
+        }
+
+        // Return redirect for regular form submissions
+        return redirect()->back()->with('success', 'Product added to cart successfully!');
+    }
+
+    private function getCartCount()
+    {
+        if (Auth::check()) {
+            return Auth::user()->cartItems->sum('quantity');
+        } else {
+            return array_sum(session('cart', []));
+        }
+    }
+
+    private function getCartTotal()
+    {
+        if (Auth::check()) {
+            return Auth::user()->cartItems->sum(function($item) {
+                return $item->product->price * $item->quantity;
+            });
+        } else {
+            $total = 0;
+            $sessionCart = session('cart', []);
+            foreach ($sessionCart as $productId => $quantity) {
+                $product = Product::find($productId);
+                if ($product) {
+                    $total += $product->price * $quantity;
+                }
+            }
+            return $total;
+        }
     }
 
     public function updateCart(Request $request, $cartItemId)

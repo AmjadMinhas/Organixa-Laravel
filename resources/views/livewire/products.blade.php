@@ -1,24 +1,24 @@
 <div>
     <!-- Filters -->
-    <div class="mb-8">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="mb-12">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
             <!-- Search -->
             <div class="md:col-span-2">
                 <label for="search" class="sr-only">Search products</label>
                 <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
                     </div>
-                    <input wire:model.live.debounce.300ms="search" type="text" id="search" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-green-500 focus:border-green-500" placeholder="Search products...">
+                    <input wire:model.live.debounce.300ms="search" type="text" id="search" class="form-input pl-12" placeholder="Search products...">
                 </div>
             </div>
 
             <!-- Category Filter -->
             <div>
                 <label for="category" class="sr-only">Category</label>
-                <select wire:model.live="category" id="category" class="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500">
+                <select wire:model.live="category" id="category" class="form-input">
                     <option value="">All Categories</option>
                     @foreach($categories as $cat)
                         <option value="{{ $cat }}">{{ $cat }}</option>
@@ -29,7 +29,7 @@
             <!-- Sort -->
             <div>
                 <label for="sort" class="sr-only">Sort by</label>
-                <select wire:model.live="sortBy" id="sort" class="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500">
+                <select wire:model.live="sortBy" id="sort" class="form-input">
                     <option value="latest">Latest</option>
                     <option value="price_low">Price: Low to High</option>
                     <option value="price_high">Price: High to Low</option>
@@ -40,41 +40,51 @@
     </div>
 
     <!-- Results Count -->
-    <div class="mb-6">
-        <p class="text-sm text-gray-600">
+    <div class="mb-8">
+        <p class="text-sm text-text-light font-medium">
             Showing {{ $products->firstItem() ?? 0 }} to {{ $products->lastItem() ?? 0 }} of {{ $products->total() }} products
         </p>
     </div>
 
     <!-- Products Grid -->
     @if($products->count() > 0)
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div class="product-grid">
             @foreach($products as $product)
-                <div class="group relative bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300 border border-gray-200">
+                <div class="product-card group">
                     <!-- Product Image -->
-                    <div class="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-t-lg bg-gray-200">
-                        <img src="{{ $product->first_image }}" alt="{{ $product->title }}" class="h-full w-full object-cover object-center group-hover:opacity-75 transition-opacity duration-300">
+                    <div class="relative overflow-hidden">
+                        <img src="{{ $product->getFirstImageAttribute() }}" alt="{{ $product->title }}" class="product-image">
+                        @if($product->stock <= 10 && $product->stock > 0)
+                            <div class="absolute top-4 right-4 bg-accent text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg">
+                                Low Stock
+                            </div>
+                        @endif
+                        @if($product->stock == 0)
+                            <div class="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg">
+                                Out of Stock
+                            </div>
+                        @endif
                     </div>
 
                     <!-- Product Info -->
-                    <div class="p-4">
-                        <h3 class="text-sm font-medium text-gray-900 mb-2">
-                            <a href="{{ route('product.detail', $product) }}" class="hover:text-green-600">
+                    <div class="product-info">
+                        <h3 class="product-title">
+                            <a href="{{ route('product.detail', $product) }}" class="hover:text-primary transition-colors duration-300">
                                 {{ $product->title }}
                             </a>
                         </h3>
                         
-                        <p class="text-sm text-gray-500 mb-3 line-clamp-2">
+                        <p class="product-benefits">
                             {{ Str::limit($product->description, 80) }}
                         </p>
 
                         <!-- Price and Stock -->
-                        <div class="flex items-center justify-between mb-3">
-                            <p class="text-lg font-semibold text-gray-900">₨{{ number_format($product->price) }}</p>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="product-price">₨{{ number_format($product->price) }}</div>
                             @if($product->isInStock())
-                                <span class="text-sm text-green-600">In Stock</span>
+                                <span class="text-sm text-accent font-medium">In Stock</span>
                             @else
-                                <span class="text-sm text-red-600">Out of Stock</span>
+                                <span class="text-sm text-red-500 font-medium">Out of Stock</span>
                             @endif
                         </div>
 
@@ -84,7 +94,7 @@
                             wire:loading.attr="disabled"
                             wire:loading.class="opacity-50 cursor-not-allowed"
                             @if(!$product->isInStock()) disabled @endif
-                            class="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 flex items-center justify-center"
+                            class="w-full btn-primary flex items-center justify-center"
                         >
                             <svg wire:loading wire:target="addToCart({{ $product->id }})" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -101,41 +111,63 @@
         </div>
 
         <!-- Pagination -->
-        <div class="mt-8">
+        <div class="mt-12">
             {{ $products->links() }}
         </div>
     @else
-        <div class="text-center py-12">
-            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.47-.881-6.08-2.33"></path>
-            </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">No products found</h3>
-            <p class="mt-1 text-sm text-gray-500">
-                Try adjusting your search or filter criteria.
+        <div class="text-center py-16">
+            <div class="w-24 h-24 bg-gradient-to-br from-accent to-accent-light rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.47-.881-6.08-2.33"></path>
+                </svg>
+            </div>
+            <h3 class="text-xl font-serif font-semibold text-text mb-2">No products found</h3>
+            <p class="text-text-light max-w-md mx-auto">
+                Try adjusting your search or filter criteria to find what you're looking for.
             </p>
         </div>
     @endif
 
     <!-- Flash Messages -->
     @if(session()->has('success'))
-        <div class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)">
-            {{ session('success') }}
+        <div class="fixed bottom-6 right-6 bg-accent text-white px-6 py-4 rounded-xl shadow-2xl z-50 max-w-sm" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span class="font-medium">{{ session('success') }}</span>
+            </div>
         </div>
     @endif
 
     @if(session()->has('error'))
-        <div class="fixed bottom-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)">
-            {{ session('error') }}
+        <div class="fixed bottom-6 right-6 bg-red-500 text-white px-6 py-4 rounded-xl shadow-2xl z-50 max-w-sm" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                <span class="font-medium">{{ session('error') }}</span>
+            </div>
         </div>
     @endif
 
     <!-- Livewire Flash Messages -->
     <div wire:ignore>
-        <div id="livewire-success" class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 hidden">
-            <span id="success-message"></span>
+        <div id="livewire-success" class="fixed bottom-6 right-6 bg-accent text-white px-6 py-4 rounded-xl shadow-2xl z-50 max-w-sm hidden">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span id="success-message" class="font-medium"></span>
+            </div>
         </div>
-        <div id="livewire-error" class="fixed bottom-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 hidden">
-            <span id="error-message"></span>
+        <div id="livewire-error" class="fixed bottom-6 right-6 bg-red-500 text-white px-6 py-4 rounded-xl shadow-2xl z-50 max-w-sm hidden">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                <span id="error-message" class="font-medium"></span>
+            </div>
         </div>
     </div>
 
@@ -150,7 +182,7 @@
                 
                 setTimeout(() => {
                     successDiv.classList.add('hidden');
-                }, 3000);
+                }, 4000);
             });
             
             Livewire.on('cart-count-updated', (event) => {
